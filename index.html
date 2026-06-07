@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>体調管理 Health Check</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" />
+  <style>
+    :root {
+      --text-strong: #111827;
+      --text-body: #1f2937;
+      --text-muted: #6b7280;
+      --surface-panel: rgba(255,255,255,0.40);
+      --surface-card-top: rgba(255,255,255,0.62);
+      --surface-card-bottom: rgba(255,255,255,0.38);
+      --surface-input: rgba(255,255,255,0.46);
+      --glass-border: rgba(255,255,255,0.42);
+      --glass-shadow: rgba(15,23,42,0.12);
+      --glass-shadow-soft: rgba(15,23,42,0.08);
+      --focus-ring: rgba(59,130,246,0.22);
+      --accent-blue: #0f4c81;
+      --success-bg: rgba(230,244,234,0.84);
+      --success-text: #137333;
+      --success-border: rgba(19,115,51,0.16);
+      --danger-bg: rgba(252,232,230,0.90);
+      --danger-text: #c5221f;
+      --danger-border: rgba(197,34,31,0.16);
+      --pending-bg: rgba(245,247,250,0.82);
+      --pending-text: #4b5563;
+      --pending-border: rgba(75,85,99,0.10);
+      --chip-ring: rgba(255,255,255,0.55);
+      --radius-xl: 28px;
+      --radius-lg: 20px;
+      --radius-md: 16px;
+      --radius-sm: 14px;
+      --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
+      --body-bg:
+        radial-gradient(circle at 14% 12%, rgba(255,255,255,0.92), rgba(255,255,255,0) 26%),
+        radial-gradient(circle at 86% 10%, rgba(175,205,255,0.55), rgba(255,255,255,0) 22%),
+        radial-gradient(circle at 75% 78%, rgba(191,233,255,0.35), rgba(255,255,255,0) 24%),
+        linear-gradient(135deg, #edf3fa 0%, #f6f9fc 42%, #e7eef8 100%);
+    }
+
+    [data-theme="dark"] {
+      --text-strong: #edf2fb;
+      --text-body: #d3dae6;
+      --text-muted: #a3aec2;
+      --surface-panel: rgba(18,23,35,0.46);
+      --surface-card-top: rgba(24,30,44,0.76);
+      --surface-card-bottom: rgba(17,22,34,0.56);
+      --surface-input: rgba(28,35,50,0.66);
+      --glass-border: rgba(255,255,255,0.12);
+      --glass-shadow: rgba(0,0,0,0.34);
+      --glass-shadow-soft: rgba(0,0,0,0.24);
+      --focus-ring: rgba(96,165,250,0.26);
+      --accent-blue: #9cc8ff;
+      --success-bg: rgba(22,70,42,0.70);
+      --success-text: #91e0aa;
+      --success-border: rgba(145,224,170,0.18);
+      --danger-bg: rgba(101,34,39,0.78);
+      --danger-text: #ffb3ac;
+      --danger-border: rgba(255,179,172,0.18);
+      --pending-bg: rgba(40,48,66,0.82);
+      --pending-text: #d1d8e5;
+      --pending-border: rgba(255,255,255,0.10);
+      --chip-ring: rgba(255,255,255,0.16);
+      --body-bg:
+        radial-gradient(circle at 15% 14%, rgba(87,125,255,0.15), rgba(0,0,0,0) 26%),
+        radial-gradient(circle at 85% 12%, rgba(69,168,255,0.18), rgba(0,0,0,0) 24%),
+        radial-gradient(circle at 75% 78%, rgba(62,93,168,0.16), rgba(0,0,0,0) 26%),
+        linear-gradient(135deg, #0d1320 0%, #131b2b 42%, #0f1726 100%);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { min-height: 100%; }
+
+    body {
+      padding: 28px 16px 48px;
+      font-family: var(--font-sans);
+      color: var(--text-body);
+      background: var(--body-bg);
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+      transition: background 220ms ease, color 180ms ease;
+    }
+
+    button, input, select, textarea { font: inherit; }
+
+    .shell { max-width: 680px; margin: 0 auto; }
+
+    .topbar {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 12px;
+    }
+
+    .pill-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 14px;
+      border: 1px solid var(--glass-border);
+      border-radius: 999px;
+      background: var(--surface-panel);
+      color: var(--text-strong);
+      cursor: pointer;
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.22), 0 10px 24px var(--glass-shadow-soft);
+      transition: transform 160ms ease, background 180ms ease, box-shadow 180ms ease;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .pill-btn:hover, .pill-btn:focus-visible {
+      transform: translateY(-1px);
+      outline: none;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.28), 0 14px 28px var(--glass-shadow);
+    }
+
+    .glass-card {
+      position: relative;
+      overflow: hidden;
+      padding: 1.5rem;
+      border-radius: var(--radius-xl);
+      background: linear-gradient(180deg, var(--surface-card-top), var(--surface-card-bottom));
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(24px) saturate(160%);
+      -webkit-backdrop-filter: blur(24px) saturate(160%);
+      box-shadow:
+        0 18px 55px var(--glass-shadow),
+        0 6px 22px var(--glass-shadow-soft),
+        inset 0 1px 0 rgba(255,255,255,0.18);
+      isolation: isolate;
+      margin-bottom: 16px;
+    }
+
+    .glass-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(135deg, rgba(255,255,255,0.18), rgba(255,255,255,0.05) 38%, rgba(255,255,255,0.01) 64%),
+        radial-gradient(circle at top left, rgba(255,255,255,0.16), transparent 34%);
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    .glass-card::after {
+      content: "";
+      position: absolute;
+      top: -40%; left: -25%;
+      width: 68%; height: 180%;
+      transform: rotate(22deg);
+      background: linear-gradient(180deg, rgba(255,255,255,0.14), rgba(255,255,255,0.01));
+      pointer-events: none;
+    }
+
+    /* TITLE */
+    .title-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 1.2rem;
+    }
+
+    .title-badge {
+      width: 42px; height: 42px;
+      display: grid; place-items: center;
+      border-radius: 14px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.42), rgba(255,255,255,0.12));
+      border: 1px solid rgba(255,255,255,0.22);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.28), 0 8px 22px rgba(59,130,246,0.08);
+      color: var(--accent-blue);
+      font-size: 20px;
+      flex: 0 0 auto;
+    }
+
+    .glass-title {
+      font-size: 22px;
+      font-weight: 650;
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+      color: var(--text-strong);
+    }
+
+    .glass-subtitle {
+      margin-top: 4px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    /* CHIP ROW */
+    .chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 1.15rem;
+    }
+
+    .member-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 10px 7px 7px;
+      border-radius: 999px;
+      border: 1px solid var(--glass-border);
+      background: var(--surface-panel);
+      color: var(--text-body);
+      font-size: 12px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.18);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+
+    .chip-avatar {
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      display: grid; place-items: center;
+      color: white;
+      font-weight: 700;
+      font-size: 11px;
+      box-shadow: 0 0 0 2px var(--chip-ring);
+      flex: 0 0 auto;
+    }
+
+    /* FORM */
+    .health-form {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .field-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-strong);
+      letter-spacing: -0.01em;
+    }
+
+    .glass-select, .glass-input, .glass-textarea {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--glass-border);
+      background: var(--surface-input);
+      color: var(--text-strong);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.14), 0 8px 24px rgba(15,23,42,0.05);
+      transition: border-color 180ms ease, box-shadow 180ms ease, background 180ms ease, transform 180ms ease;
+      outline: none;
+      appearance: none;
+    }
+
+    .glass-select {
+      background-image:
+        linear-gradient(45deg, transparent 50%, var(--text-muted) 50%),
+        linear-gradient(135deg, var(--text-muted) 50%, transparent 50%);
+      background-position: calc(100% - 20px) calc(50% - 2px), calc(100% - 14px) calc(50% - 2px);
+      background-size: 6px 6px, 6px 6px;
+      background-repeat: no-repeat;
+      padding-right: 40px;
+    }
+
+    .glass-input:focus, .glass-select:focus, .glass-textarea:focus {
+      border-color: rgba(96,165,250,0.64);
+      box-shadow: 0 0 0 4px var(--focus-ring), inset 0 1px 0 rgba(255,255,255,0.20), 0 12px 28px rgba(59,130,246,0.12);
+      transform: translateY(-1px);
+    }
+
+    .glass-textarea { min-height: 92px; resize: vertical; }
+
+    .temp-row { display: flex; gap: 12px; align-items: center; }
+    .temp-unit { min-width: 44px; font-size: 12px; color: var(--text-muted); }
+
+    .quick-row { margin-top: 8px; display: flex; gap: 8px; flex-wrap: wrap; }
+
+    .quick-btn {
+      padding: 6px 12px;
+      border: 1px solid var(--glass-border);
+      border-radius: 999px;
+      background: var(--surface-panel);
+      color: var(--text-body);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.18);
+      font-size: 12px;
+      cursor: pointer;
+      transition: transform 160ms ease, background 160ms ease, box-shadow 160ms ease;
+    }
+
+    .quick-btn:hover, .quick-btn:focus-visible, .quick-btn.active {
+      transform: translateY(-1px);
+      outline: none;
+      border-color: rgba(96,165,250,0.38);
+    }
+
+    .actions { display: flex; gap: 10px; margin-top: 4px; }
+
+    .primary-btn, .secondary-btn {
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+
+    .primary-btn {
+      flex: 1;
+      padding: 12px 16px;
+      color: var(--accent-blue);
+      font-size: 14px;
+      font-weight: 650;
+      background: linear-gradient(180deg, rgba(255,255,255,0.36), rgba(255,255,255,0.10)), rgba(96,165,250,0.18);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.24), 0 10px 28px rgba(59,130,246,0.12);
+    }
+
+    .secondary-btn {
+      padding: 12px 18px;
+      color: var(--text-body);
+      background: var(--surface-panel);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.18);
+    }
+
+    .primary-btn:hover, .secondary-btn:hover,
+    .primary-btn:focus-visible, .secondary-btn:focus-visible {
+      transform: translateY(-1px);
+      outline: none;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.26), 0 14px 30px rgba(15,23,42,0.12);
+    }
+
+    .status-box {
+      margin-top: 1rem;
+      padding: 12px 14px;
+      border-radius: var(--radius-sm);
+      display: none;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.14);
+    }
+
+    .status-box.show { display: flex; }
+    .status-box.pending { background: var(--pending-bg); color: var(--pending-text); border: 1px solid var(--pending-border); }
+    .status-box.success { background: var(--success-bg); color: var(--success-text); border: 1px solid var(--success-border); }
+    .status-box.error   { background: var(--danger-bg);  color: var(--danger-text);  border: 1px solid var(--danger-border); }
+
+    .status-icon {
+      width: 26px; height: 26px;
+      display: grid; place-items: center;
+      border-radius: 50%;
+      flex: 0 0 auto;
+      font-size: 14px;
+      background: rgba(255,255,255,0.16);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.18);
+    }
+
+    .status-copy { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+    .status-title { font-weight: 650; }
+    .status-detail { opacity: 0.9; line-height: 1.35; }
+
+    /* ── NAME MANAGER PANEL ── */
+    .manage-card {
+      position: relative;
+      overflow: hidden;
+      padding: 1.5rem;
+      border-radius: var(--radius-xl);
+      background: linear-gradient(180deg, var(--surface-card-top), var(--surface-card-bottom));
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(24px) saturate(160%);
+      -webkit-backdrop-filter: blur(24px) saturate(160%);
+      box-shadow: 0 18px 55px var(--glass-shadow), 0 6px 22px var(--glass-shadow-soft), inset 0 1px 0 rgba(255,255,255,0.18);
+      isolation: isolate;
+      margin-bottom: 16px;
+      display: none;
+    }
+
+    .manage-card.open { display: block; }
+
+    .manage-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.18), rgba(255,255,255,0.05) 38%, rgba(255,255,255,0.01) 64%);
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    .manage-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.1rem;
+    }
+
+    .manage-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 16px;
+      font-weight: 650;
+      color: var(--text-strong);
+      letter-spacing: -0.02em;
+    }
+
+    .manage-title i { color: var(--accent-blue); font-size: 18px; }
+
+    .add-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 1rem;
+    }
+
+    .add-row input {
+      flex: 1;
+      padding: 11px 14px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--glass-border);
+      background: var(--surface-input);
+      color: var(--text-strong);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.14);
+      outline: none;
+      font-size: 14px;
+      transition: border-color 180ms ease, box-shadow 180ms ease;
+    }
+
+    .add-row input:focus {
+      border-color: rgba(96,165,250,0.64);
+      box-shadow: 0 0 0 4px var(--focus-ring), inset 0 1px 0 rgba(255,255,255,0.20);
+    }
+
+    .add-row input::placeholder { color: var(--text-muted); }
+
+    .add-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 11px 18px;
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(96,165,250,0.38);
+      background: linear-gradient(180deg, rgba(96,165,250,0.28), rgba(96,165,250,0.12));
+      color: var(--accent-blue);
+      font-size: 14px;
+      font-weight: 650;
+      cursor: pointer;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.22);
+      transition: transform 160ms ease, box-shadow 160ms ease;
+      white-space: nowrap;
+    }
+
+    .add-btn:hover, .add-btn:focus-visible {
+      transform: translateY(-1px);
+      outline: none;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.28), 0 10px 24px rgba(59,130,246,0.14);
+    }
+
+    .name-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .name-list-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--glass-border);
+      background: var(--surface-panel);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.14);
+      transition: background 160ms ease, box-shadow 160ms ease;
+    }
+
+    .name-list-item:hover {
+      background: var(--surface-input);
+    }
+
+    .name-list-avatar {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      display: grid; place-items: center;
+      color: white;
+      font-weight: 700;
+      font-size: 12px;
+      box-shadow: 0 0 0 2px var(--chip-ring);
+      flex: 0 0 auto;
+    }
+
+    .name-list-label {
+      flex: 1;
+      font-size: 14px;
+      color: var(--text-strong);
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .name-list-tag {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: rgba(96,165,250,0.14);
+      color: var(--accent-blue);
+      border: 1px solid rgba(96,165,250,0.22);
+      white-space: nowrap;
+    }
+
+    .delete-btn {
+      display: grid; place-items: center;
+      width: 30px; height: 30px;
+      border-radius: 50%;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      flex: 0 0 auto;
+      transition: background 160ms ease, color 160ms ease, border-color 160ms ease, transform 160ms ease;
+    }
+
+    .delete-btn:hover, .delete-btn:focus-visible {
+      background: var(--danger-bg);
+      color: var(--danger-text);
+      border-color: var(--danger-border);
+      transform: scale(1.08);
+      outline: none;
+    }
+
+    .manage-hint {
+      margin-top: 10px;
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.45;
+    }
+
+    /* INFO PANEL */
+    .info-panel {
+      margin-top: 0;
+      padding: 1rem 1.1rem;
+      border-radius: var(--radius-lg);
+      background: var(--surface-panel);
+      border: 1px solid var(--glass-border);
+      color: var(--text-muted);
+      font-size: 13px;
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.18), 0 12px 28px rgba(15,23,42,0.06);
+    }
+
+    .info-panel p { margin-bottom: 8px; color: var(--text-strong); font-weight: 600; }
+    .info-panel ul { padding-left: 20px; }
+    .info-panel li + li { margin-top: 4px; }
+
+    @media (max-width: 640px) {
+      body { padding: 18px 12px 32px; }
+      .glass-card, .manage-card { padding: 1.15rem; border-radius: 22px; }
+      .actions { flex-direction: column; }
+      .secondary-btn { width: 100%; }
+      .add-row { flex-direction: column; }
+      .add-btn { justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+
+    <!-- TOP BAR -->
+    <div class="topbar" style="gap:10px;">
+      <button type="button" class="pill-btn" id="manageToggle" aria-expanded="false">
+        <i class="ti ti-users-group"></i>
+        <span>メンバー管理</span>
+      </button>
+      <button type="button" class="pill-btn" data-theme-toggle aria-label="Switch theme">
+        <i class="ti ti-moon"></i>
+        <span>Dark mode</span>
+      </button>
+    </div>
+
+    <!-- NAME MANAGER PANEL -->
+    <div class="manage-card" id="manageCard" aria-label="Member management panel">
+      <div class="manage-title-row">
+        <div class="manage-title">
+          <i class="ti ti-users-group"></i>
+          <span>名前テンプレート管理</span>
+        </div>
+        <button type="button" class="pill-btn" id="manageClose" style="padding:6px 10px;">
+          <i class="ti ti-x"></i>
+        </button>
+      </div>
+
+      <div class="add-row">
+        <input type="text" id="newNameInput" placeholder="名前を入力 / Enter name" maxlength="40" autocomplete="off" />
+        <button type="button" class="add-btn" id="addNameBtn">
+          <i class="ti ti-user-plus"></i>
+          追加
+        </button>
+      </div>
+
+      <ul class="name-list" id="nameList" aria-label="Name list"></ul>
+
+      <div class="actions" style="margin-top:12px;">
+        <button type="button" class="primary-btn" id="saveMembersBtn">
+          <i class="ti ti-device-floppy" style="font-size:16px;margin-right:4px;vertical-align:-2px;" aria-hidden="true"></i>
+          メンバーを保存 / Save
+        </button>
+        <button type="button" class="secondary-btn" id="reloadMembersBtn">
+          <i class="ti ti-refresh" style="font-size:15px;margin-right:4px;vertical-align:-2px;" aria-hidden="true"></i>
+          再読込
+        </button>
+      </div>
+
+      <div id="memberStatus" class="status-box" aria-live="polite" style="margin-top:12px;"></div>
+
+      <p class="manage-hint">💾 「保存」を押すと変更がサーバー（GAS）に保存され、次回以降も保持されます。</p>
+    </div>
+
+    <!-- MAIN FORM CARD -->
+    <div class="glass-card">
+      <div class="title-row">
+        <div class="title-badge"><i class="ti ti-heart-rate-monitor"></i></div>
+        <div>
+          <h2 class="glass-title">体調管理 Health Check</h2>
+          <p class="glass-subtitle">Notion連携フォーム / Daily health log</p>
+        </div>
+      </div>
+
+      <div class="chip-row" id="chipRow" aria-label="Team members"></div>
+
+      <form id="healthForm" class="health-form">
+        <div class="field-group">
+          <label class="field-label" for="name">名前 Name *</label>
+          <select id="name" required class="glass-select">
+            <option value="">選択してください / Select</option>
+          </select>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="temperature">体温 Temperature (℃) *</label>
+          <div class="temp-row">
+            <input type="number" id="temperature" step="0.1" min="35" max="42" placeholder="36.5" required class="glass-input" style="flex:1;" />
+            <span class="temp-unit">℃</span>
+          </div>
+          <div class="quick-row">
+            <button type="button" class="quick-btn" data-temp="36.5">36.5℃</button>
+            <button type="button" class="quick-btn" data-temp="37.0">37.0℃</button>
+            <button type="button" class="quick-btn" data-temp="37.5">37.5℃</button>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="health">健康状態 Health Status *</label>
+          <select id="health" required class="glass-select">
+            <option value="">選択してください / Select</option>
+            <option value="良：Good">良：Good ✓</option>
+            <option value="異常あり：Problem">異常あり：Problem ⚠</option>
+          </select>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="alcohol">アルコール Alcohol consumption</label>
+          <input type="number" id="alcohol" step="0.1" min="0" placeholder="0" class="glass-input" />
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="notes">備考 Notes</label>
+          <textarea id="notes" class="glass-textarea" placeholder="何か気になることを記入 / Enter any notes"></textarea>
+        </div>
+
+        <div class="actions">
+          <button type="submit" class="primary-btn">
+            <i class="ti ti-send" style="font-size:16px;margin-right:4px;vertical-align:-2px;" aria-hidden="true"></i>
+            Notionに送信 / Submit
+          </button>
+          <button type="reset" class="secondary-btn">リセット</button>
+        </div>
+      </form>
+
+      <div id="status" class="status-box" aria-live="polite"></div>
+    </div>
+
+    <!-- INFO PANEL -->
+    <div class="info-panel">
+      <p>✓ このアプリについて</p>
+      <ul>
+        <li>このフォームは Notion の「体調管理DB」と連携しています</li>
+        <li>「メンバー管理」ボタンで名前の追加・削除・保存ができます</li>
+        <li>保存したメンバーはサーバー（GAS）に記録され次回も保持されます</li>
+        <li>「送信」をクリックするとNotionに自動保存されます</li>
+        <li>体温が37℃以上の場合は確認が必要です</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <script>
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbz_eozlxeNUhTLiuabP4q8GnEb-1SPpkoPNfHWA0k_BV_8ZdeXheUMXdXjUY3xTdoUj/exec";
+
+    // ── DEFAULT MEMBERS ──────────────────────────────────────────
+    const DEFAULT_MEMBERS = [
+      { name: "小沢健人",       color: "#3b82f6" },
+      { name: "藤谷航汰",       color: "#14b8a6" },
+      { name: "阿部航生",       color: "#f59e0b" },
+      { name: "Pratik P Biswas", color: "#8b5cf6" },
+      { name: "後藤千鶴",       color: "#ec4899" },
+      { name: "関寺寛",         color: "#10b981" },
+      { name: "向山弘昭",       color: "#ef4444" }
+    ];
+
+    const PALETTE = [
+      "#3b82f6","#14b8a6","#f59e0b","#8b5cf6",
+      "#ec4899","#10b981","#ef4444","#f97316",
+      "#06b6d4","#84cc16","#a855f7","#6366f1"
+    ];
+
+    // Working member list (loaded from GAS, falls back to defaults)
+    let members = DEFAULT_MEMBERS.map(m => ({ ...m }));
+    let membersDirty = false; // 未保存の変更があるか
+
+    // ── THEME ─────────────────────────────────────────────────────
+    const root = document.documentElement;
+    const themeToggle = document.querySelector('[data-theme-toggle]');
+    let currentTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+
+    function applyTheme(t) {
+      root.setAttribute('data-theme', t);
+      themeToggle.innerHTML = t === 'dark'
+        ? '<i class="ti ti-sun"></i><span>Light mode</span>'
+        : '<i class="ti ti-moon"></i><span>Dark mode</span>';
+      themeToggle.setAttribute('aria-label', t === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
+    }
+
+    applyTheme(currentTheme);
+    themeToggle.addEventListener('click', () => {
+      currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      applyTheme(currentTheme);
+    });
+
+    // ── HELPERS ───────────────────────────────────────────────────
+    function initials(name) {
+      const parts = name.trim().split(/\s+/);
+      if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+      return name.trim()[0] || '?';
+    }
+
+    function pickColor(name) {
+      let hash = 0;
+      for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+      return PALETTE[Math.abs(hash) % PALETTE.length];
+    }
+
+    // ── RENDER ────────────────────────────────────────────────────
+    function renderAll() {
+      renderChips();
+      renderSelect();
+      renderNameList();
+    }
+
+    function renderChips() {
+      const row = document.getElementById('chipRow');
+      row.innerHTML = members.map(m => `
+        <div class="member-chip">
+          <span class="chip-avatar" style="background:${m.color};">${initials(m.name)}</span>
+          <span>${m.name}</span>
+        </div>
+      `).join('');
+    }
+
+    function renderSelect() {
+      const sel = document.getElementById('name');
+      const current = sel.value;
+      sel.innerHTML = '<option value="">選択してください / Select</option>' +
+        members.map(m => `<option value="${m.name}"${m.name === current ? ' selected' : ''}>${m.name}</option>`).join('');
+      updateNameAccent();
+    }
+
+    function renderNameList() {
+      const ul = document.getElementById('nameList');
+      if (members.length === 0) {
+        ul.innerHTML = '<li style="padding:12px;text-align:center;color:var(--text-muted);font-size:13px;">メンバーがいません</li>';
+        return;
+      }
+      ul.innerHTML = members.map((m, idx) => `
+        <li class="name-list-item">
+          <span class="name-list-avatar" style="background:${m.color};">${initials(m.name)}</span>
+          <span class="name-list-label">${m.name}</span>
+          <span class="name-list-tag">デフォルト</span>
+          <button type="button" class="delete-btn" data-idx="${idx}" aria-label="Delete ${m.name}">
+            <i class="ti ti-trash" style="font-size:14px;"></i>
+          </button>
+        </li>
+      `).join('');
+
+      ul.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const idx = parseInt(btn.dataset.idx, 10);
+          members.splice(idx, 1);
+          membersDirty = true;
+          updateSaveState();
+          renderAll();
+        });
+      });
+    }
+
+    // ── ADD NAME ──────────────────────────────────────────────────
+    document.getElementById('addNameBtn').addEventListener('click', () => {
+      const input = document.getElementById('newNameInput');
+      const val = input.value.trim();
+      if (!val) return;
+      if (members.some(m => m.name === val)) {
+        input.style.borderColor = 'rgba(197,34,31,0.5)';
+        setTimeout(() => { input.style.borderColor = ''; }, 1200);
+        return;
+      }
+      members.push({ name: val, color: pickColor(val) });
+      input.value = '';
+      membersDirty = true;
+      updateSaveState();
+      renderAll();
+    });
+
+    document.getElementById('newNameInput').addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        document.getElementById('addNameBtn').click();
+      }
+    });
+
+    // ── MANAGE PANEL TOGGLE ───────────────────────────────────────
+    const manageCard = document.getElementById('manageCard');
+    const manageToggle = document.getElementById('manageToggle');
+
+    manageToggle.addEventListener('click', () => {
+      const open = manageCard.classList.toggle('open');
+      manageToggle.setAttribute('aria-expanded', open);
+      if (open) document.getElementById('newNameInput').focus();
+    });
+
+    document.getElementById('manageClose').addEventListener('click', () => {
+      manageCard.classList.remove('open');
+      manageToggle.setAttribute('aria-expanded', 'false');
+    });
+
+    // ── NAME ACCENT ───────────────────────────────────────────────
+    function updateNameAccent() {
+      const sel = document.getElementById('name');
+      const m = members.find(x => x.name === sel.value);
+      const color = m ? m.color : null;
+      sel.style.boxShadow = color
+        ? `0 0 0 4px ${color}22, inset 0 1px 0 rgba(255,255,255,0.14), 0 8px 24px rgba(15,23,42,0.05)`
+        : '';
+      sel.style.borderColor = color ? `${color}66` : '';
+    }
+
+    document.getElementById('name').addEventListener('change', updateNameAccent);
+
+    // ── TEMP QUICK BUTTONS ────────────────────────────────────────
+    const tempInput = document.getElementById('temperature');
+    const quickBtns = document.querySelectorAll('.quick-btn');
+
+    function updateQuickButtons() {
+      quickBtns.forEach(btn => btn.classList.toggle('active', tempInput.value === btn.dataset.temp));
+    }
+
+    quickBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        tempInput.value = btn.dataset.temp;
+        updateQuickButtons();
+      });
+    });
+
+    tempInput.addEventListener('input', updateQuickButtons);
+
+    // ── FORM RESET ────────────────────────────────────────────────
+    document.getElementById('healthForm').addEventListener('reset', () => {
+      setTimeout(() => {
+        updateNameAccent();
+        updateQuickButtons();
+        document.getElementById('status').className = 'status-box';
+      }, 0);
+    });
+
+    // ── STATUS ────────────────────────────────────────────────────
+    function setStatus(type, title, detail, icon) {
+      const el = document.getElementById('status');
+      el.className = `status-box show ${type}`;
+      el.innerHTML = `
+        <div class="status-icon"><i class="${icon}"></i></div>
+        <div class="status-copy">
+          <div class="status-title">${title}</div>
+          <div class="status-detail">${detail}</div>
+        </div>`;
+    }
+
+    // ── SUBMIT ────────────────────────────────────────────────────
+    document.getElementById('healthForm').addEventListener('submit', async e => {
+      e.preventDefault();
+      const name        = document.getElementById('name').value;
+      const temperature = parseFloat(document.getElementById('temperature').value) || null;
+      const health      = document.getElementById('health').value;
+      const alcohol     = parseFloat(document.getElementById('alcohol').value) || 0;
+      const notes       = document.getElementById('notes').value;
+
+      if (!name || !health || temperature === null) {
+        setStatus('error', '入力不足', '名前・体温・健康状態を入力してください。', 'ti ti-alert-circle');
+        return;
+      }
+
+      setStatus('pending', '送信中', 'Notionへ送信しています。数秒待ってください。', 'ti ti-loader-2');
+
+      try {
+        await fetch(GAS_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'submitHealth', name, temperature, health, alcohol, notes })
+        });
+
+        setStatus('success', '送信完了', 'リクエストを送信しました。Notion反映を確認してください。', 'ti ti-check');
+
+        setTimeout(() => { document.getElementById('healthForm').reset(); }, 2800);
+      } catch {
+        setStatus('error', '送信失敗', '通信に失敗しました。ネットワークまたはGAS設定を確認してください。', 'ti ti-x');
+      }
+    });
+
+    // ── MEMBER SAVE STATE ─────────────────────────────────────────
+    function updateSaveState() {
+      const btn = document.getElementById('saveMembersBtn');
+      if (membersDirty) {
+        btn.classList.add('dirty');
+        btn.style.opacity = '1';
+      } else {
+        btn.classList.remove('dirty');
+        btn.style.opacity = '0.6';
+      }
+    }
+
+    function setMemberStatus(type, title, detail, icon) {
+      const el = document.getElementById('memberStatus');
+      if (!type) { el.className = 'status-box'; el.innerHTML = ''; return; }
+      el.className = `status-box show ${type}`;
+      el.innerHTML = `
+        <div class="status-icon"><i class="${icon}"></i></div>
+        <div class="status-copy">
+          <div class="status-title">${title}</div>
+          <div class="status-detail">${detail}</div>
+        </div>`;
+    }
+
+    // ── LOAD MEMBERS FROM GAS ─────────────────────────────────────
+    async function loadMembers() {
+      setMemberStatus('pending', '読込中', 'サーバーからメンバーを取得しています。', 'ti ti-loader-2');
+      try {
+        const res = await fetch(GAS_URL + '?action=getMembers');
+        const data = await res.json();
+        if (data && Array.isArray(data.members) && data.members.length > 0) {
+          members = data.members.map(m => ({
+            name: m.name,
+            color: m.color || pickColor(m.name)
+          }));
+        } else {
+          // サーバーが空ならデフォルトを使用
+          members = DEFAULT_MEMBERS.map(m => ({ ...m }));
+        }
+        membersDirty = false;
+        updateSaveState();
+        renderAll();
+        setMemberStatus('success', '読込完了', `${members.length}名を読み込みました。`, 'ti ti-check');
+        setTimeout(() => setMemberStatus(null), 2200);
+      } catch {
+        // 取得失敗時はデフォルトのまま動作継続
+        members = DEFAULT_MEMBERS.map(m => ({ ...m }));
+        membersDirty = false;
+        updateSaveState();
+        renderAll();
+        setMemberStatus('error', '読込失敗', 'デフォルトのメンバーを表示しています。', 'ti ti-x');
+      }
+    }
+
+    // ── SAVE MEMBERS TO GAS ───────────────────────────────────────
+    document.getElementById('saveMembersBtn').addEventListener('click', async () => {
+      setMemberStatus('pending', '保存中', 'メンバーをサーバーへ保存しています。', 'ti ti-loader-2');
+      try {
+        await fetch(GAS_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'saveMembers', members })
+        });
+        membersDirty = false;
+        updateSaveState();
+        setMemberStatus('success', '保存完了', `${members.length}名を保存しました。`, 'ti ti-check');
+        setTimeout(() => setMemberStatus(null), 2600);
+      } catch {
+        setMemberStatus('error', '保存失敗', '通信に失敗しました。GAS設定を確認してください。', 'ti ti-x');
+      }
+    });
+
+    document.getElementById('reloadMembersBtn').addEventListener('click', loadMembers);
+
+    // ── INIT ──────────────────────────────────────────────────────
+    renderAll();
+    updateQuickButtons();
+    updateSaveState();
+    loadMembers();
+  </script>
+</body>
+</html>
