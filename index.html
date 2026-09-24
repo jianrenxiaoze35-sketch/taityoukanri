@@ -966,21 +966,32 @@
         return;
       }
 
+      const submitBtn = e.target.querySelector('button[type="submit"]');
+      if (submitBtn.disabled) return;
+      submitBtn.disabled = true;
       setStatus('pending', '送信中', 'Notionへ送信しています。数秒待ってください。', 'ti ti-loader-2');
 
       try {
-        await fetch(GAS_URL, {
+        const res = await fetch(GAS_URL, {
           method: 'POST',
-          mode: 'no-cors',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({ action: 'submitHealth', name, temperature, health, alcohol, notes })
+          body: JSON.stringify({ action: 'submitHealth', name, temperature, health, alcohol, notes, done: true })
         });
+        const data = await res.json();
 
-        setStatus('success', '送信完了', 'リクエストを送信しました。Notion反映を確認してください。', 'ti ti-check');
+        if (data.duplicate) {
+          setStatus('error', '入力済みです', `${name}さんは今日すでに入力しています（${data.time}）。修正は体調管理DBで行ってください。`, 'ti ti-alert-circle');
+          return;
+        }
+        if (!data.ok) throw new Error(data.error || '送信に失敗しました');
+
+        setStatus('success', '送信完了', 'Notionに記録しました。', 'ti ti-check');
 
         setTimeout(() => { document.getElementById('healthForm').reset(); }, 2800);
-      } catch {
-        setStatus('error', '送信失敗', '通信に失敗しました。ネットワークまたはGAS設定を確認してください。', 'ti ti-x');
+      } catch (err) {
+        setStatus('error', '送信失敗', (err && err.message) || '通信に失敗しました。ネットワークまたはGAS設定を確認してください。', 'ti ti-x');
+      } finally {
+        submitBtn.disabled = false;
       }
     });
 
