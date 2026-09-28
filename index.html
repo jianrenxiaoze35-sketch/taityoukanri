@@ -280,27 +280,6 @@
     .temp-row { display: flex; gap: 12px; align-items: center; }
     .temp-unit { min-width: 44px; font-size: 12px; color: var(--text-muted); }
 
-    .quick-row { margin-top: 8px; display: flex; gap: 8px; flex-wrap: wrap; }
-
-    .quick-btn {
-      padding: 6px 12px;
-      border: 1px solid var(--glass-border);
-      border-radius: 999px;
-      background: var(--surface-panel);
-      color: var(--text-body);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.18);
-      font-size: 12px;
-      cursor: pointer;
-      transition: transform 160ms ease, background 160ms ease, box-shadow 160ms ease;
-    }
-
-    .quick-btn:hover, .quick-btn:focus-visible, .quick-btn.active {
-      transform: translateY(-1px);
-      outline: none;
-      border-color: rgba(96,165,250,0.38);
-    }
 
     .actions { display: flex; gap: 10px; margin-top: 4px; }
 
@@ -687,11 +666,6 @@
             <input type="number" id="temperature" step="0.1" min="35" max="42" placeholder="36.5" required class="glass-input" style="flex:1;" />
             <span class="temp-unit">℃</span>
           </div>
-          <div class="quick-row">
-            <button type="button" class="quick-btn" data-temp="36.5">36.5℃</button>
-            <button type="button" class="quick-btn" data-temp="37.0">37.0℃</button>
-            <button type="button" class="quick-btn" data-temp="37.5">37.5℃</button>
-          </div>
         </div>
 
         <div class="field-group">
@@ -914,28 +888,10 @@
 
     document.getElementById('name').addEventListener('change', updateNameAccent);
 
-    // ── TEMP QUICK BUTTONS ────────────────────────────────────────
-    const tempInput = document.getElementById('temperature');
-    const quickBtns = document.querySelectorAll('.quick-btn');
-
-    function updateQuickButtons() {
-      quickBtns.forEach(btn => btn.classList.toggle('active', tempInput.value === btn.dataset.temp));
-    }
-
-    quickBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
-        tempInput.value = btn.dataset.temp;
-        updateQuickButtons();
-      });
-    });
-
-    tempInput.addEventListener('input', updateQuickButtons);
-
     // ── FORM RESET ────────────────────────────────────────────────
     document.getElementById('healthForm').addEventListener('reset', () => {
       setTimeout(() => {
         updateNameAccent();
-        updateQuickButtons();
         document.getElementById('status').className = 'status-box';
       }, 0);
     });
@@ -1072,7 +1028,6 @@
 
     // ── INIT ──────────────────────────────────────────────────────
     renderAll();
-    updateQuickButtons();
     updateSaveState();
     loadMembers();
   </script>
